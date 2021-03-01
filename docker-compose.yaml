@@ -3,10 +3,13 @@ services:
   mec-backend:
     build: ./
     ports: 
-      - '8080:80'
+      - '8080:8080'
     volumes: 
+      - images:/app/images
       - ./:/app
       - /app/node_modules
+    env_file: 
+      - ./env/backend.env
 
 volumes: 
-  data:
+  images: {}
