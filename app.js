@@ -6,7 +6,8 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 
 const userRoutes = require('./routes/user');
-const verifierRoutes = require('./routes/verifier');
+const verifierRoutes = require('./routes/verifier'); 
+const adminRoutes = require('./routes/admin'); 
 
 
 const app = express();
@@ -56,6 +57,7 @@ app.use((req, res, next) => {
 
 app.use('/auth', userRoutes);
 app.use('/verifier', verifierRoutes);
+app.use('/admin', adminRoutes);
 
 app.use((error, req, res, next) => {
   console.log(error);

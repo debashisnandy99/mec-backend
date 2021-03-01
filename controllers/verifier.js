@@ -23,7 +23,7 @@ exports.signup = (req, res, next) => {
         username: username,
         password: hashedPw,
         name: name,
-        department: department
+        department: department,
       });
       return user.save();
     })
@@ -65,6 +65,7 @@ exports.login = (req, res, next) => {
         {
           username: loadedUser.username,
           userId: loadedUser._id.toString(),
+          department: loadedUser.department,
         },
         "mecidgov142gfgg",
         { expiresIn: "5h" }

@@ -59,6 +59,14 @@ const userSchema = new Schema({
     type:String,
     required:true
   },
+  avStatus:{
+    type: Boolean,
+    default: false
+  },
+  pvStatus: {
+    type: Boolean,
+    default: false
+  },
   services: [
     {
       type: Schema.Types.ObjectId,
