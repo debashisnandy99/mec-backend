@@ -26,8 +26,6 @@ router.put(
     body("fathersName").trim().not().isEmpty(),
     body("mothersName").trim().not().isEmpty(),
     body("address").trim().not().isEmpty(),
-    body("walletAddress").trim().not().isEmpty(),
-    body("mecId").trim().not().isEmpty(),
     body("phone")
       .trim()
       .not()
@@ -43,6 +41,6 @@ router.put(
   authController.signup
 );
 
-//router.post('/login', authController.login);
+router.post('/login', authController.login);
 
 module.exports = router;
