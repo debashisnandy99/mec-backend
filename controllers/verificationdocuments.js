@@ -43,6 +43,10 @@ exports.verifyDocs = (req, res, next) => {
     throw error;
   }
 
+  const userId = req.body.uid;
+  const status = req.body.status;
 
+
+  Utils.startVerification(req.department, userId, status)
 
 }
