@@ -31,7 +31,7 @@ const userSchema = new Schema({
   },
   address: {
     type: String,
-    required:true
+    required: true
   },
   walletAddress: {
     type: String,
@@ -52,27 +52,29 @@ const userSchema = new Schema({
     required: true
   },
   adhaar: {
-    type:String,
+    type: String,
     required: true
   },
-  pan:{
-    type:String,
-    required:true
+  pan: {
+    type: String,
+    required: true
   },
-  avStatus:{
-    type: Boolean,
-    default: false
+  avStatus: {
+    type: String,
+    enum: ['pending', 'verified', 'fail'],
+    default: 'pending'
   },
   pvStatus: {
     type: Boolean,
-    default: false
+    enum: ['pending', 'verified', 'fail'],
+    default: 'pending'
   },
-  services: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Service'
-    }
-  ]
-}, { timestamps: true });
+  services: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Service'
+  }]
+}, {
+  timestamps: true
+});
 
 module.exports = mongoose.model('User', userSchema);
