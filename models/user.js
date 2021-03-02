@@ -65,7 +65,7 @@ const userSchema = new Schema({
     default: 'pending'
   },
   pvStatus: {
-    type: Boolean,
+    type: String,
     enum: ['pending', 'verified', 'fail'],
     default: 'pending'
   },

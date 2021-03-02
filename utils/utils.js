@@ -4,7 +4,7 @@ const User = require("../models/user");
 exports.getDocuments = async (department) => {
   if (department == "adhaar") {
     return await User.find({
-      avStatus: false,
+      avStatus: 'pending',
     }).select({
       adhaar: 1,
       name: 1,
@@ -17,7 +17,7 @@ exports.getDocuments = async (department) => {
     });
   } else if (department == "pan") {
     return await User.find({
-      pvStatus: false,
+      pvStatus: 'pending',
     }).select({
       adhaar: 1,
       name: 1,
@@ -35,7 +35,7 @@ exports.getDocuments = async (department) => {
   });
 };
 
-exports.startVerification = (department, userId, status) => {
+exports.startVerification = (department, userId, status, res, next) => {
 
   if (department == "adhaar") {
     User.updateOne({

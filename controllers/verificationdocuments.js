@@ -47,6 +47,6 @@ exports.verifyDocs = (req, res, next) => {
   const status = req.body.status;
 
 
-  Utils.startVerification(req.department, userId, status)
+  Utils.startVerification(req.department, userId, status, res, next)
 
 }

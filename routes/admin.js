@@ -9,5 +9,6 @@ const router = express.Router();
 
 
 router.get("/verify",isAuthVerifier,verificationdocumentsController.getPedingVerification);
+router.post("/verifydocs",isAuthVerifier,verificationdocumentsController.verifyDocs);
 
 module.exports = router;
