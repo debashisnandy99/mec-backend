@@ -1,5 +1,7 @@
 const Verifier = require("../models/verifier");
 const User = require("../models/user");
+const ipfsClient = require('ipfs-http-client');
+
 
 exports.getDocuments = async (department) => {
   if (department == "adhaar") {
@@ -74,7 +76,21 @@ exports.startVerification = (department, userId, status, res, next) => {
 
 
   } else {
-    
+
+
+    const ipfs = ipfsClient('http://ipf544s:5001');
+    const {
+      globSource
+    } = ipfsClient;
+    ipfs.add(globSource('./images', {
+      recursive: true
+    })).then(file => {
+      console.log(file)
+      res.status(200).json({
+        message: "Verifier",
+      });
+    });
+
   }
 
 
