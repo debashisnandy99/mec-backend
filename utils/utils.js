@@ -73,7 +73,11 @@ exports.startVerification = (department, userId, status, res, next) => {
     });
 
 
+  } else {
+    
   }
+
+
 
 
 
