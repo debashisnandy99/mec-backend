@@ -1,6 +1,6 @@
-const Verifier = require("../models/verifier");
-const User = require("../models/user");
+const rimraf = require("rimraf");
 const ipfsClient = require('ipfs-http-client');
+const User = require("../models/user");
 
 
 exports.getDocuments = async (department) => {
@@ -103,9 +103,12 @@ const addToIpfs = async (uid, res, next) => {
   ipfs.add(globSource('./images/' + user.email, {
       recursive: true
     })).then(file => {
-      console.log(file.cid)
-      res.status(200).json({
-        message: "Verifier",
+      console.log(file.cid);
+      rimraf('./images/' + user.email, function () {
+
+        res.status(200).json({
+          message: "Verifier",
+        });
       });
     })
     .catch((err) => {
@@ -114,5 +117,5 @@ const addToIpfs = async (uid, res, next) => {
       }
       next(err);
     });
-    
+
 }
