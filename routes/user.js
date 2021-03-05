@@ -56,7 +56,7 @@ router.put('/detailsUp', [
   body("fathersName").trim().not().isEmpty(),
   body("mothersName").trim().not().isEmpty(),
   body("address").trim().not().isEmpty()
-], authController.uploadOtherDetails);
+], isAuth,authController.uploadOtherDetails);
 
 router.post('/login', body("email")
   .isEmail()

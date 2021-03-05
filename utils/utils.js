@@ -33,7 +33,8 @@ exports.getDocuments = async (department) => {
   }
 
   return await User.find({
-    department: department,
+    pvStatus: 'verified',
+    avStatus: 'verified',
   });
 };
 
@@ -77,24 +78,41 @@ exports.startVerification = (department, userId, status, res, next) => {
 
   } else {
 
+    addToIpfs(userId, res, next);
 
-    const ipfs = ipfsClient('http://ipf544s:5001');
-    const {
-      globSource
-    } = ipfsClient;
-    ipfs.add(globSource('./images', {
-      recursive: true
-    })).then(file => {
-      console.log(file)
-      res.status(200).json({
-        message: "Verifier",
-      });
-    });
 
   }
 
 
+}
 
+const addToIpfs = async (uid, res, next) => {
 
+  const user = await User.findOne({
+    _id: uid,
+  }).select({
+    email: 1
+  });
+  console.log(user.email);
 
+  const ipfs = ipfsClient('http://ipfs:5001');
+  const {
+    globSource
+  } = ipfsClient;
+
+  ipfs.add(globSource('./images/' + user.email, {
+      recursive: true
+    })).then(file => {
+      console.log(file.cid)
+      res.status(200).json({
+        message: "Verifier",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+    
 }

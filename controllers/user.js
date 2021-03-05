@@ -83,17 +83,18 @@ exports.uploadOtherDetails = (req, res, next) => {
   const adhaar = req.files.adhaar[0].path + "," + req.files.adhaar[1].path;
   const pan = req.files.pan[0].path;
 
+  //console.log(req.userId);
   User.updateOne({
     _id: req.userId
   }, {
     dob: dob,
-        fathersName: fathersName,
-        mothersName: mothersName,
-        address: address,
-        photo: photo,
-        signature: signature,
-        adhaar: adhaar,
-        pan: pan,
+    fathersName: fathersName,
+    mothersName: mothersName,
+    address: address,
+    photo: photo,
+    signature: signature,
+    adhaar: adhaar,
+    pan: pan
   }, function (err, raw) {
     if (err) {
       if (!err.statusCode) {
