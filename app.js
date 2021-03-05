@@ -4,17 +4,23 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
+var fs = require('fs');
 
 const userRoutes = require('./routes/user');
-const verifierRoutes = require('./routes/verifier'); 
-const adminRoutes = require('./routes/admin'); 
+const verifierRoutes = require('./routes/verifier');
+const adminRoutes = require('./routes/admin');
 
 
 const app = express();
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "images");
+    var dir = "images/" + req.body.email;
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     cb(null, new Date().toISOString() + "-" + file.originalname);
@@ -36,11 +42,25 @@ const fileFilter = (req, file, cb) => {
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
 app.use(
-  multer({ storage: fileStorage, fileFilter: fileFilter }).fields([
-    { name: "photo", maxCount: 1 },
-    { name: "signature", maxCount: 1 },
-    { name: "pan", maxCount: 1 },
-    { name: "adhaar", maxCount: 2 },
+  multer({
+    storage: fileStorage,
+    fileFilter: fileFilter
+  }).fields([{
+      name: "photo",
+      maxCount: 1
+    },
+    {
+      name: "signature",
+      maxCount: 1
+    },
+    {
+      name: "pan",
+      maxCount: 1
+    },
+    {
+      name: "adhaar",
+      maxCount: 2
+    },
   ])
 );
 app.use("/images", express.static(path.join(__dirname, "images")));
@@ -64,12 +84,17 @@ app.use((error, req, res, next) => {
   const status = error.statusCode || 500;
   const message = error.message;
   const data = error.data;
-  res.status(status).json({ message: message, data: data });
+  res.status(status).json({
+    message: message,
+    data: data
+  });
 });
 
 mongoose.connect(
-  `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster1.hbyfu.mongodb.net/mec-gov?retryWrites=true&w=majority`,
-  { useNewUrlParser: true, useUnifiedTopology: true },
+  `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster1.hbyfu.mongodb.net/mec-gov?retryWrites=true&w=majority`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  },
   function (err, db) {
     if (err) {
       console.log(process.env.MONGODB_USERNAME);

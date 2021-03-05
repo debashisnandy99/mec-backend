@@ -16,22 +16,18 @@ const userSchema = new Schema({
   },
   dob: {
     type: String,
-    required: true
   },
   doi: {
     type: String,
   },
   fathersName: {
     type: String,
-    required: true
   },
   mothersName: {
     type: String,
-    required: true
   },
   address: {
     type: String,
-    required: true
   },
   walletAddress: {
     type: String,
@@ -45,19 +41,15 @@ const userSchema = new Schema({
   },
   photo: {
     type: String,
-    required: true
   },
   signature: {
     type: String,
-    required: true
   },
   adhaar: {
     type: String,
-    required: true
   },
   pan: {
     type: String,
-    required: true
   },
   avStatus: {
     type: String,
