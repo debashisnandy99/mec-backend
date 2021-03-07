@@ -7,11 +7,12 @@ services:
     volumes:
       - ./tmp/ipfs-docker-staging:/export
       - ./tmp/ipfs-docker-data:/data/ipfs
-  ganache:
-    image: "trufflesuite/ganache-cli:latest"
-    ports: "8545:8545"
-    depends_on:
-      - ipfs
+  # ganache:
+  #   image: "trufflesuite/ganache-cli:latest"
+  #   ports: 
+  #     - "8545:8545"
+  #   depends_on:
+  #     - ipfs
   mec-backend:
     build: ./
     ports:
@@ -23,7 +24,7 @@ services:
     env_file:
       - ./env/backend.env
     depends_on:
-      - ganache
+      - ipfs
 
 volumes:
   images: {}
