@@ -61,6 +61,11 @@ const userSchema = new Schema({
     enum: ['pending', 'verified', 'fail'],
     default: 'pending'
   },
+  bdStatus: {
+    type: String,
+    enum: ['pending', 'verified', 'fail'],
+    default: 'pending'
+  },
   services: [{
     type: Schema.Types.ObjectId,
     ref: 'Service'
