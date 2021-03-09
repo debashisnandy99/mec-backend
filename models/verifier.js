@@ -17,7 +17,6 @@ const postSchema = new Schema(
         },
         department: {
             type: String,
-            enum: ['adhaar','pan','gov'],
             required: true
         },
         password: {

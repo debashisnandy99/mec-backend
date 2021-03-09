@@ -157,12 +157,26 @@ const addToIpfs = async (uid, res, next) => {
       );
 
 
-      fileHash.methods.setFileHash("QmUwdvSuW8FNLzi6M47HiNCg87y8PqdZn4oJ5f3UYXZhXH").send({
+      fileHash.methods.setFileHash(file.cid.toString()).send({
           from: accountsEth[0]
         }).on('receipt', function (receipt) {
-          // receipt example
-          console.log(file.cid.toString());
-          res.status(200).json(receipt);
+          
+          User.updateOne({
+            _id: req.userId
+          }, {
+            transactionHash: file.cid.toString(),
+          }, function (err, raw) {
+            if (err) {
+              if (!err.statusCode) {
+                err.statusCode = 500;
+              }
+              next(err);
+            } else {
+              res.status(200).json({
+                message: "received"
+              });
+            }
+          });
         })
         .on('error', function (err, receipt) { // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
           if (!err.statusCode) {
