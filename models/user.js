@@ -51,6 +51,9 @@ const userSchema = new Schema({
   pan: {
     type: String,
   },
+  birthCertificate: {
+    type: String,
+  },
   avStatus: {
     type: String,
     enum: ['pending', 'verified', 'fail'],

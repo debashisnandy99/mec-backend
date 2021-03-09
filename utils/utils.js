@@ -34,6 +34,18 @@ exports.getDocuments = async (department) => {
       phone: 1,
       photo: 1
     });
+  } else if (department == "birth") {
+    return await User.find({
+      bdStatus: 'pending',
+    }).select({
+      birthCertificate: 1,
+      name: 1,
+      dob: 1,
+      fathersName: 1,
+      mothersName: 1,
+      address: 1,
+      photo: 1
+    });
   }
 
   return await User.find({
@@ -78,8 +90,23 @@ exports.startVerification = (department, userId, status, res, next) => {
         });
       }
     });
-
-
+  } else if (department == "birth") {
+    User.updateOne({
+      _id: userId
+    }, {
+      bdStatus: status ? 'verified' : 'fail'
+    }, function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      } else {
+        res.status(200).json({
+          message: "Verified successfully.",
+        });
+      }
+    });
   } 
 
 
