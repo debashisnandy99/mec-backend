@@ -29,9 +29,9 @@ router.put(
 router.post('/login', adminAuthController.login);
 
 
-router.get("/pendingVerification",isAuth,adminVerificationDocumentsController.getPedingVerification);
-router.get("/upcomingVerification",isAuth,adminVerificationDocumentsController.getUpComingVerification);
-router.get("/verified-user",isAuth,adminVerificationDocumentsController.getVerifiedUser);
+router.get("/pendingVerification/:page",isAuth,adminVerificationDocumentsController.getPedingVerification);
+router.get("/upcomingVerification/:page",isAuth,adminVerificationDocumentsController.getUpComingVerification);
+router.get("/verified-user/:page",isAuth,adminVerificationDocumentsController.getVerifiedUser);
 router.post("/verifyandstore",isAuth,adminVerificationDocumentsController.verifyAndStore);
 
 module.exports = router;

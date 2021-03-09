@@ -1,10 +1,9 @@
-const {
-  validationResult
-} = require("express-validator");
+const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
+const LoginLogs = require("../models/loginlogs");
 
 exports.signup = (req, res, next) => {
   const errors = validationResult(req);
@@ -21,7 +20,6 @@ exports.signup = (req, res, next) => {
   const password = req.body.password;
   const phone = req.body.phone;
 
-
   bcrypt
     .hash(password, 12)
     .then((hashedPw) => {
@@ -29,23 +27,25 @@ exports.signup = (req, res, next) => {
         email: email,
         password: hashedPw,
         name: name,
-        phone: phone
+        phone: phone,
       });
       return user.save();
     })
     .then((result) => {
-      const token = jwt.sign({
+      const token = jwt.sign(
+        {
           email: result.email,
           userId: result._id.toString(),
         },
-        "mecidgov142gfgg", {
-          expiresIn: "5h"
+        "mecidgov142gfgg",
+        {
+          expiresIn: "5h",
         }
       );
       res.status(201).json({
         message: "User created!",
         userId: result._id,
-        token: token
+        token: token,
       });
     })
     .catch((err) => {
@@ -55,7 +55,6 @@ exports.signup = (req, res, next) => {
       next(err);
     });
 };
-
 
 exports.uploadOtherDetails = (req, res, next) => {
   const errors = validationResult(req);
@@ -68,7 +67,7 @@ exports.uploadOtherDetails = (req, res, next) => {
   }
 
   if (!req.files) {
-    const error = new Error('No image provided.');
+    const error = new Error("No image provided.");
     error.statusCode = 422;
     throw error;
   }
@@ -84,40 +83,52 @@ exports.uploadOtherDetails = (req, res, next) => {
   const pan = req.files.pan[0].path;
 
   //console.log(req.userId);
-  User.updateOne({
-    _id: req.userId
-  }, {
-    dob: dob,
-    fathersName: fathersName,
-    mothersName: mothersName,
-    address: address,
-    photo: photo,
-    signature: signature,
-    adhaar: adhaar,
-    pan: pan
-  }, function (err, raw) {
-    if (err) {
-      if (!err.statusCode) {
-        err.statusCode = 500;
+  User.updateOne(
+    {
+      _id: req.userId,
+    },
+    {
+      dob: dob,
+      fathersName: fathersName,
+      mothersName: mothersName,
+      address: address,
+      photo: photo,
+      signature: signature,
+      adhaar: adhaar,
+      pan: pan,
+    },
+    function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      } else {
+        res.status(200).json({
+          message: "Uploaded successfully.",
+        });
       }
-      next(err);
-    } else {
-      res.status(200).json({
-        message: "Uploaded successfully.",
-      });
     }
-  });
-
-}
+  );
+};
 
 exports.login = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   let loadedUser;
+  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  var os = req.body.os;
+  var tok;
+
+  const loginLog = new LoginLogs({
+    ip: ip,
+    os: os,
+  });
+
   //console.log(email);
   User.findOne({
-      email: email
-    })
+    email: email,
+  })
     .then((user) => {
       if (!user) {
         const error = new Error("A user with this email could not be found.");
@@ -133,17 +144,27 @@ exports.login = (req, res, next) => {
         error.statusCode = 401;
         throw error;
       }
-      const token = jwt.sign({
+
+      return loginLog.save();
+    })
+    .then((result) => {
+      loadedUser.loginLogs.push(loginLog);
+      return loadedUser.save();
+    })
+    .then((result) => {
+      const token = jwt.sign(
+        {
           email: loadedUser.email,
           userId: loadedUser._id.toString(),
         },
-        "mecidgov142gfgg", {
-          expiresIn: "5h"
+        "mecidgov142gfgg",
+        {
+          expiresIn: "5h",
         }
       );
       res.status(200).json({
         token: token,
-        userId: loadedUser._id.toString()
+        userId: loadedUser._id.toString(),
       });
     })
     .catch((err) => {

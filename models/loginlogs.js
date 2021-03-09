@@ -3,10 +3,6 @@ const Schema = mongoose.Schema;
 
 const loginLogsSchema = new Schema(
   {
-    time: {
-      type: String,
-      required: true,
-    },
     ip: {
       type: String,
       required: true,
