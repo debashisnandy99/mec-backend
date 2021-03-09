@@ -69,7 +69,13 @@ const userSchema = new Schema({
   services: [{
     type: Schema.Types.ObjectId,
     ref: 'Service'
-  }]
+  }],
+  loginLogs: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'LoginLogs'
+    }
+  ]
 }, {
   timestamps: true
 });

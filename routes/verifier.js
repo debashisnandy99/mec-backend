@@ -4,6 +4,9 @@ const { body } = require("express-validator");
 const User = require("../models/verifier");
 const authController = require("../controllers/verifier");
 
+const verificationdocumentsController = require("../controllers/verificationdocuments");
+const isAuthVerifier = require('../middleware/is-auth-verifier');
+
 const router = express.Router();
 
 router.put(
@@ -25,5 +28,9 @@ router.put(
 );
 
 router.post('/login', authController.login);
+
+
+router.get("/verify",isAuthVerifier,verificationdocumentsController.getPedingVerification);
+router.post("/verifydocs",isAuthVerifier,verificationdocumentsController.verifyDocs);
 
 module.exports = router;
