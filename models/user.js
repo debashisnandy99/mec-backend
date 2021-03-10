@@ -27,6 +27,12 @@ const userSchema = new Schema(
     mothersName: {
       type: String,
     },
+    fatherMecId: {
+      type: String,
+    },
+    motherMecId: {
+      type: String,
+    },
     address: {
       type: String,
     },
@@ -52,12 +58,6 @@ const userSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Service",
-      },
-    ],
-    documents: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Documents",
       },
     ],
     loginLogs: [

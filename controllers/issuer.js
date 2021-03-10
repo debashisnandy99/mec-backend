@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/issuer");
+const Department = require("../models/department");
 
 exports.signup = (req, res, next) => {
   const errors = validationResult(req);
@@ -15,9 +16,20 @@ exports.signup = (req, res, next) => {
   const username = req.body.username;
   const name = req.body.name;
   const password = req.body.password;
-  const department = req.body.department;
-  bcrypt
-    .hash(password, 12)
+  // const department = req.body.department;
+  let department;
+  Department.findOne({ name: req.body.department })
+    .then((value) => {
+      if (!value) {
+        const error = new Error(
+          "A department with this name could not be found."
+        );
+        error.statusCode = 401;
+        throw error;
+      }
+      department = value;
+      return bcrypt.hash(password, 12);
+    })
     .then((hashedPw) => {
       const user = new User({
         username: username,
@@ -44,6 +56,7 @@ exports.login = (req, res, next) => {
   let loadedUser;
   //console.log(username);
   User.findOne({ username: username })
+    .populate('department')
     .then((user) => {
       if (!user) {
         const error = new Error(
@@ -65,7 +78,7 @@ exports.login = (req, res, next) => {
         {
           username: loadedUser.username,
           userId: loadedUser._id.toString(),
-          department: loadedUser.department,
+          department: loadedUser.department.name,
         },
         "mecidgov142gfgg",
         { expiresIn: "5h" }

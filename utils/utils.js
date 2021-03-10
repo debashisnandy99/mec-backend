@@ -4,54 +4,24 @@ const ganache = require("ganache-cli");
 const Web3 = require('web3');
 
 const User = require("../models/user");
+const Document = require("../models/document");
 
 
 
 exports.getDocuments = async (department) => {
-  if (department == "adhaar") {
-    return await User.find({
-      avStatus: 'pending',
-    }).select({
-      adhaar: 1,
-      name: 1,
-      dob: 1,
-      fathersName: 1,
-      mothersName: 1,
-      address: 1,
-      phone: 1,
-      photo: 1
-    });
-  } else if (department == "pan") {
-    return await User.find({
-      pvStatus: 'pending',
-    }).select({
-      adhaar: 1,
-      name: 1,
-      dob: 1,
-      fathersName: 1,
-      mothersName: 1,
-      address: 1,
-      phone: 1,
-      photo: 1
-    });
-  } else if (department == "birth") {
-    return await User.find({
-      bdStatus: 'pending',
-    }).select({
-      birthCertificate: 1,
-      name: 1,
-      dob: 1,
-      fathersName: 1,
-      mothersName: 1,
-      address: 1,
-      photo: 1
-    });
-  }
 
-  return await User.find({
-    pvStatus: 'verified',
-    avStatus: 'verified',
-  });
+  return await Document
+  .find({department: department})
+  .populate('user', {
+    dob: 1,
+    fathersName: 1,
+    mothersName: 1,
+    address: 1,
+    phone: 1,
+    photo: 1
+  })
+
+ 
 };
 
 exports.startVerification = (department, userId, status, res, next) => {

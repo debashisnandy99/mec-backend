@@ -1,8 +1,11 @@
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
+const Department = require("../models/department");
+const Document = require("../models/document");
 const LoginLogs = require("../models/loginlogs");
 
 exports.signup = (req, res, next) => {
@@ -15,10 +18,18 @@ exports.signup = (req, res, next) => {
     throw error;
   }
 
+  if (!req.file) {
+    const error = new Error("No image provided.");
+    error.statusCode = 422;
+    throw error;
+  }
+
   const email = req.body.email;
   const name = req.body.name;
   const password = req.body.password;
   const phone = req.body.phone;
+
+  const photo = req.file.path;
 
   bcrypt
     .hash(password, 12)
@@ -28,6 +39,7 @@ exports.signup = (req, res, next) => {
         password: hashedPw,
         name: name,
         phone: phone,
+        photo: photo,
       });
       return user.save();
     })
@@ -56,6 +68,54 @@ exports.signup = (req, res, next) => {
     });
 };
 
+exports.uploadDetails = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed.");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
+  if (!req.file) {
+    const error = new Error("No image provided.");
+    error.statusCode = 422;
+    throw error;
+  }
+  const dob = req.body.dob;
+  const fathersName = req.body.fathersName;
+  const mothersName = req.body.mothersName;
+  const address = req.body.address;
+  const signature = req.file.path;
+
+  User.updateOne(
+    {
+      _id: req.userId,
+    },
+    {
+      dob: dob,
+      fathersName: fathersName,
+      mothersName: mothersName,
+      address: address,
+      signature: signature,
+    },
+    function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      } else {
+        res.status(200).json({
+          status: 1,
+          message: "Uploaded successfully.",
+        });
+      }
+    }
+  );
+};
+
 exports.uploadOtherDetails = (req, res, next) => {
   const errors = validationResult(req);
 
@@ -66,86 +126,44 @@ exports.uploadOtherDetails = (req, res, next) => {
     throw error;
   }
 
-  if (!req.files) {
+  if (!req.file) {
     const error = new Error("No image provided.");
     error.statusCode = 422;
     throw error;
   }
 
-  const dob = req.body.dob;
-  const fathersName = req.body.fathersName;
-  const mothersName = req.body.mothersName;
-  const address = req.body.address;
-  //console.log(req.files);
-  const photo = req.files.photo[0].path;
-  const signature = req.files.signature[0].path;
-  const adhaar = req.files.adhaar[0].path + "," + req.files.adhaar[1].path;
-  const pan = req.files.pan[0].path;
-  let birthCertificate = req.files?.birth;
-  if (typeof birthCertificate !== "undefined") {
-    const dobYear = +dob.split("-")["2"];
-    if (dobYear > 1990) {
-      const error = new Error("NBirth certificate required");
-      error.statusCode = 422;
-      throw error;
-    }
-    User.updateOne(
-      {
-        _id: req.userId,
-      },
-      {
-        dob: dob,
-        fathersName: fathersName,
-        mothersName: mothersName,
-        address: address,
-        photo: photo,
-        signature: signature,
-        adhaar: adhaar,
-        pan: pan,
-        birthCertificate: birthCertificate[0].path,
-      },
-      function (err, raw) {
-        if (err) {
-          if (!err.statusCode) {
-            err.statusCode = 500;
-          }
-          next(err);
-        } else {
-          res.status(200).json({
-            message: "Uploaded successfully.",
-          });
-        }
+  const docid = req.body.docid;
+  const file = req.file.path;
+
+  Department.findOne({ name: req.body.dep })
+    .then((value) => {
+      if (!value) {
+        const error = new Error(
+          "A department with this name could not be found."
+        );
+        error.statusCode = 401;
+        throw error;
       }
-    );
-  } else {
-    User.updateOne(
-      {
-        _id: req.userId,
-      },
-      {
-        dob: dob,
-        fathersName: fathersName,
-        mothersName: mothersName,
-        address: address,
-        photo: photo,
-        signature: signature,
-        adhaar: adhaar,
-        pan: pan,
-      },
-      function (err, raw) {
-        if (err) {
-          if (!err.statusCode) {
-            err.statusCode = 500;
-          }
-          next(err);
-        } else {
-          res.status(200).json({
-            message: "Uploaded successfully.",
-          });
-        }
+      const document = new Document({
+        depId: value,
+        docId: docid,
+        user: mongoose.Types.ObjectId(req.userId),
+        file: file,
+      });
+      return document.save();
+    })
+    .then((value) => {
+      res.status(200).json({
+        status: 1,
+        message: "Uploaded successfully.",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
       }
-    );
-  }
+      next(err);
+    });
 };
 
 exports.login = (req, res, next) => {

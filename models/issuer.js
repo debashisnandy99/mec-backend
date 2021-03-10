@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const postSchema = new Schema(
+const issuerSchema = new Schema(
     {
         name: {
             type: String,
@@ -17,6 +17,7 @@ const postSchema = new Schema(
         },
         department: {
             type: Schema.Types.ObjectId,
+            ref: "Department",
             required: true
         },
         password: {
@@ -27,4 +28,4 @@ const postSchema = new Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model('Verifier', postSchema);
+module.exports = mongoose.model('Issuer', issuerSchema);
