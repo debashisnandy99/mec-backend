@@ -1,7 +1,7 @@
 const express = require("express");
 const { body } = require("express-validator");
 
-const User = require("../models/verifier");
+const User = require("../models/issuer");
 const authController = require("../controllers/verifier");
 
 const verificationdocumentsController = require("../controllers/verificationdocuments");

@@ -2,7 +2,7 @@ const {
   validationResult
 } = require("express-validator");
 
-const Verifier = require("../models/verifier");
+const Verifier = require("../models/issuer");
 const User = require("../models/user");
 const Utils = require("../utils/utils");
 

@@ -1,95 +1,67 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const userSchema = new Schema({
-  email: {
-    type: String,
-    required: true
+const userSchema = new Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    dob: {
+      type: String,
+    },
+    doi: {
+      type: String,
+    },
+    fathersName: {
+      type: String,
+    },
+    mothersName: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
+    transactionHash: {
+      type: String,
+    },
+    mecId: {
+      type: String,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
+    photo: {
+      type: String,
+    },
+    signature: {
+      type: String,
+    },
+    services: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Service",
+      },
+    ],
+    loginLogs: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "LoginLogs",
+      },
+    ],
   },
-  password: {
-    type: String,
-    required: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  dob: {
-    type: String,
-  },
-  doi: {
-    type: String,
-  },
-  fathersName: {
-    type: String,
-  },
-  mothersName: {
-    type: String,
-  },
-  address: {
-    type: String,
-  },
-  transactionHash: {
-    type: String,
-  },
-  mecId: {
-    type: String,
-  },
-  phone: {
-    type: String,
-    required: true
-  },
-  photo: {
-    type: String,
-  },
-  signature: {
-    type: String,
-  },
-  adhaar: {
-    type: String,
-  },
-  pan: {
-    type: String,
-  },
-  birthCertificate: {
-    type: String,
-  },
-  avStatus: {
-    type: String,
-    enum: ['pending', 'verified', 'fail'],
-    default: 'pending'
-  },
-  avTime: {
-    type: Date,
-  },
-  pvStatus: {
-    type: String,
-    enum: ['pending', 'verified', 'fail'],
-    default: 'pending'
-  },
-  pvTime: {
-    type: Date,
-  },
-  bdStatus: {
-    type: String,
-    enum: ['pending', 'verified', 'fail'],
-    default: 'pending'
-  },
-  bdTime: {
-    type: Date,
-  },
-  services: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Service'
-  }],
-  loginLogs: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'LoginLogs'
-    }
-  ]
-}, {
-  timestamps: true
-});
+  {
+    timestamps: true,
+  }
+);
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);
