@@ -14,7 +14,7 @@ const documentsSchema = new Schema({
     enum: ["pending", "verified", "fail"],
     default: "pending",
   },
-  file: [
+  files: [
       {
           type:String
       }
