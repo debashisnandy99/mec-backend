@@ -6,9 +6,14 @@ const documentsSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Department",
   },
+  docId:{
+    type: String,
+  },
   status: {
     type: String,
     enum: ["pending", "verified", "fail"],
     default: "pending",
   },
 }, {timestamps:true});
+
+module.exports = mongoose.model("Documents", userSchema);

@@ -30,9 +30,11 @@ const userSchema = new Schema(
     address: {
       type: String,
     },
-    transactionHash: {
-      type: String,
-    },
+    transactionHash: [
+      {
+        type: String,
+      },
+    ],
     mecId: {
       type: String,
     },
@@ -50,6 +52,12 @@ const userSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Service",
+      },
+    ],
+    documents: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Documents",
       },
     ],
     loginLogs: [
