@@ -166,7 +166,50 @@ exports.uploadOtherDetails = (req, res, next) => {
     });
 };
 
+exports.checkMecIdExists = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed.");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
+  const mecId = req.body.mec;
+
+  User.find({
+    mecId: mecId,
+  })
+    .then((value) => {
+      if (!value) {
+        const error = new Error("Mec id not found");
+        error.statusCode = 401;
+        throw error;
+      }
+
+      res.status(200).json({
+        status: 1,
+        message: "Founded",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 exports.login = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed.");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
   const email = req.body.email;
   const password = req.body.password;
   let loadedUser;
