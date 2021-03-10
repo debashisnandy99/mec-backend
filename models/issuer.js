@@ -16,7 +16,7 @@ const postSchema = new Schema(
             required: true
         },
         department: {
-            type: String,
+            type: Schema.Types.ObjectId,
             required: true
         },
         password: {
