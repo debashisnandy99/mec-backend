@@ -233,6 +233,11 @@ exports.login = (req, res, next) => {
         throw error;
       }
       loadedUser = user;
+      if (!user.mecId) {
+        const error = new Error("Account not verified");
+        error.statusCode = 401;
+        throw error;
+      }
       return bcrypt.compare(password, user.password);
     })
     .then((isEqual) => {
