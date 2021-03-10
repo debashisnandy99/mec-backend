@@ -61,6 +61,10 @@ app.use(
       name: "adhaar",
       maxCount: 2
     },
+    {
+      name: "birth",
+      maxCount: 1
+    },
   ])
 );
 app.use("/images", express.static(path.join(__dirname, "images")));

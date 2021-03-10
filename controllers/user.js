@@ -81,35 +81,71 @@ exports.uploadOtherDetails = (req, res, next) => {
   const signature = req.files.signature[0].path;
   const adhaar = req.files.adhaar[0].path + "," + req.files.adhaar[1].path;
   const pan = req.files.pan[0].path;
-
-  //console.log(req.userId);
-  User.updateOne(
-    {
-      _id: req.userId,
-    },
-    {
-      dob: dob,
-      fathersName: fathersName,
-      mothersName: mothersName,
-      address: address,
-      photo: photo,
-      signature: signature,
-      adhaar: adhaar,
-      pan: pan,
-    },
-    function (err, raw) {
-      if (err) {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      } else {
-        res.status(200).json({
-          message: "Uploaded successfully.",
-        });
-      }
+  let birthCertificate = req.files?.birth;
+  if (typeof birthCertificate !== "undefined") {
+    const dobYear = +dob.split("-")["2"];
+    if (dobYear > 1990) {
+      const error = new Error("NBirth certificate required");
+      error.statusCode = 422;
+      throw error;
     }
-  );
+    User.updateOne(
+      {
+        _id: req.userId,
+      },
+      {
+        dob: dob,
+        fathersName: fathersName,
+        mothersName: mothersName,
+        address: address,
+        photo: photo,
+        signature: signature,
+        adhaar: adhaar,
+        pan: pan,
+        birthCertificate: birthCertificate[0].path,
+      },
+      function (err, raw) {
+        if (err) {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        } else {
+          res.status(200).json({
+            message: "Uploaded successfully.",
+          });
+        }
+      }
+    );
+  } else {
+    User.updateOne(
+      {
+        _id: req.userId,
+      },
+      {
+        dob: dob,
+        fathersName: fathersName,
+        mothersName: mothersName,
+        address: address,
+        photo: photo,
+        signature: signature,
+        adhaar: adhaar,
+        pan: pan,
+      },
+      function (err, raw) {
+        if (err) {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        } else {
+          res.status(200).json({
+            message: "Uploaded successfully.",
+          });
+        }
+      }
+    );
+  }
 };
 
 exports.login = (req, res, next) => {

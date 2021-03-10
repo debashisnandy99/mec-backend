@@ -60,7 +60,8 @@ exports.startVerification = (department, userId, status, res, next) => {
     User.updateOne({
       _id: userId
     }, {
-      avStatus: status ? 'verified' : 'fail'
+      avStatus: status,
+      avTime: Date.now()
     }, function (err, raw) {
       if (err) {
         if (!err.statusCode) {
@@ -77,7 +78,8 @@ exports.startVerification = (department, userId, status, res, next) => {
     User.updateOne({
       _id: userId
     }, {
-      pvStatus: status ? 'verified' : 'fail'
+      pvStatus: status,
+      pvTime: Date.now()
     }, function (err, raw) {
       if (err) {
         if (!err.statusCode) {
@@ -94,7 +96,8 @@ exports.startVerification = (department, userId, status, res, next) => {
     User.updateOne({
       _id: userId
     }, {
-      bdStatus: status ? 'verified' : 'fail'
+      bdStatus: status,
+      bdTime: Date.now()
     }, function (err, raw) {
       if (err) {
         if (!err.statusCode) {

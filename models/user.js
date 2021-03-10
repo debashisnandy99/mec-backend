@@ -59,15 +59,24 @@ const userSchema = new Schema({
     enum: ['pending', 'verified', 'fail'],
     default: 'pending'
   },
+  avTime: {
+    type: Date,
+  },
   pvStatus: {
     type: String,
     enum: ['pending', 'verified', 'fail'],
     default: 'pending'
   },
+  pvTime: {
+    type: Date,
+  },
   bdStatus: {
     type: String,
     enum: ['pending', 'verified', 'fail'],
     default: 'pending'
+  },
+  bdTime: {
+    type: Date,
   },
   services: [{
     type: Schema.Types.ObjectId,
