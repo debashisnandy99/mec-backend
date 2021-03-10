@@ -14,6 +14,11 @@ const documentsSchema = new Schema({
     enum: ["pending", "verified", "fail"],
     default: "pending",
   },
+  file: [
+      {
+          type:String
+      }
+  ]
 }, {timestamps:true});
 
 module.exports = mongoose.model("Documents", userSchema);
