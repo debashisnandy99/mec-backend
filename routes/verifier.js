@@ -30,7 +30,7 @@ router.put(
 router.post('/login', authController.login);
 
 
-router.get("/verify",isAuthVerifier,verificationdocumentsController.getPedingVerification);
+router.get("/getlist/:page",isAuthVerifier,verificationdocumentsController.getVerification);
 router.post("/verifydocs",isAuthVerifier,verificationdocumentsController.verifyDocs);
 router.post('/depreg',verificationdocumentsController.addDepartment)
 module.exports = router;

@@ -46,7 +46,7 @@ exports.signup = (req, res, next) => {
     .then((result) => {
       const token = jwt.sign(
         {
-          email: result.email,
+          email: result.phone,
           userId: result._id.toString(),
         },
         "mecidgov142gfgg",
@@ -86,6 +86,8 @@ exports.uploadDetails = (req, res, next) => {
   const dob = req.body.dob;
   const fathersName = req.body.fathersName;
   const mothersName = req.body.mothersName;
+  const mothersMecId = req.body.mothersmecid;
+  const fathersMecId = req.body.fathersmecid;
   const address = req.body.address;
   const signature = req.file.path;
 
@@ -98,6 +100,8 @@ exports.uploadDetails = (req, res, next) => {
       fathersName: fathersName,
       mothersName: mothersName,
       address: address,
+      mothersMecId: mothersMecId,
+      fathersMecId: fathersMecId,
       signature: signature,
     },
     function (err, raw) {

@@ -78,7 +78,7 @@ exports.login = (req, res, next) => {
         {
           username: loadedUser.username,
           userId: loadedUser._id.toString(),
-          department: loadedUser.department.name,
+          department: loadedUser.department._id,
         },
         "mecidgov142gfgg",
         { expiresIn: "5h" }

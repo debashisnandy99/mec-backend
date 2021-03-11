@@ -15,7 +15,7 @@ const app = express();
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    var dir = "images/" + req.body.email;
+    var dir = "images";
 
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);

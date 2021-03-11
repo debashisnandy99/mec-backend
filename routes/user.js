@@ -14,8 +14,6 @@ router.put(
   "/signup",
 
   body("email")
-  .isEmail()
-  .withMessage("Please enter a valid email.")
   .custom((value, {
     req
   }) => {
@@ -26,8 +24,7 @@ router.put(
         return Promise.reject("E-Mail address already exists!");
       }
     });
-  })
-  .normalizeEmail(),
+  }),
   body("password").trim().isLength({
     min: 5
   }),
@@ -56,6 +53,11 @@ router.put('/detailsUp', [
   body("fathersName").trim().not().isEmpty(),
   body("mothersName").trim().not().isEmpty(),
   body("address").trim().not().isEmpty()
+], isAuth,authController.uploadDetails);
+
+
+router.put('/fileUpload', [
+  body("docid").trim().not().isEmpty(),
 ], isAuth,authController.uploadOtherDetails);
 
 router.post('/login', body("email")

@@ -5,7 +5,6 @@ const userSchema = new Schema(
   {
     email: {
       type: String,
-      required: true,
     },
     password: {
       type: String,
@@ -27,10 +26,10 @@ const userSchema = new Schema(
     mothersName: {
       type: String,
     },
-    fatherMecId: {
+    fathersMecId: {
       type: String,
     },
-    motherMecId: {
+    mothersMecId: {
       type: String,
     },
     address: {
