@@ -51,7 +51,7 @@ exports.signup = (req, res, next) => {
         },
         "mecidgov142gfgg",
         {
-          expiresIn: "5h",
+          expiresIn: "24h",
         }
       );
       res.status(201).json({

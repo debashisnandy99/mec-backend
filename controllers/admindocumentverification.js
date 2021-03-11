@@ -1,5 +1,7 @@
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
+const Document = require("../models/document");
+const Department = require("../models/department");
 
 exports.getPedingVerification = (req, res, next) => {
   const errors = validationResult(req);
@@ -10,81 +12,42 @@ exports.getPedingVerification = (req, res, next) => {
     throw error;
   }
 
-  const currentPage = req.query.page || 1;
-  const perPage = 8;
-  let totalUsers;
-
-  User.find({
-    pvStatus: "verified",
-    avStatus: "verified",
-    bdStatus: "verified",
-  })
-    .countDocuments()
-    .then((count) => {
-      totalUsers = count;
-      return User.find({
-        pvStatus: "verified",
-        avStatus: "verified",
-        bdStatus: "verified",
-      })
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
-    })
-    .then((value) => {
-      res.status(200).json({
-        message: "Fetched Docs successfully.",
-        users: value,
-        totalUsers: totalUsers,
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-};
-
-exports.getUpComingVerification = (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const error = new Error("Validation failed, entered data is incorrect.");
-    error.statusCode = 422;
+  const docsHeader = req.get("Docs");
+  if (!docsHeader) {
+    const error = new Error("Type of docs not specified");
+    error.statusCode = 401;
     throw error;
   }
-
   const currentPage = req.query.page || 1;
   const perPage = 8;
-  let totalUsers;
 
-  User.find()
-    .or([
-      {
-        pvStatus: { $ne: "verified" },
-        avStatus: { $ne: "verified" },
-        bdStatus: { $ne: "verified" },
+  Document.aggregate([
+    {
+      $match: {
+        status: docsHeader,
       },
-    ])
-    .countDocuments()
-    .then((count) => {
-      totalUsers = count;
-      return User.find()
-        .or([
-          {
-            pvStatus: { $ne: "verified" },
-            avStatus: { $ne: "verified" },
-            bdStatus: { $ne: "verified" },
-          },
-        ])
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
+    },
+    {
+      $group: {
+        _id: "$user",
+        docs: {
+          $push: "$$ROOT",
+        },
+      },
+    },
+  ])
+    .skip((currentPage - 1) * perPage)
+    .limit(perPage)
+    .then((result) => {
+      return User.populate(result, { path: "docs.user" });
+    })
+    .then((result) => {
+      return Department.populate(result, { path: "docs.depId" });
     })
     .then((value) => {
       res.status(200).json({
         message: "Fetched Docs successfully.",
         users: value,
-        totalUsers: totalUsers,
       });
     })
     .catch((err) => {
@@ -93,42 +56,7 @@ exports.getUpComingVerification = (req, res, next) => {
       }
       next(err);
     });
-};
 
-exports.getVerifiedUser = (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const error = new Error("Validation failed, entered data is incorrect.");
-    error.statusCode = 422;
-    throw error;
-  }
-
-  const currentPage = req.query.page || 1;
-  const perPage = 8;
-  let totalUsers;
-
-  User.find({ transactionHash: { $ne: null } })
-    .countDocuments()
-    .then((count) => {
-      totalUsers = count;
-      return User.find({ transactionHash: { $ne: null } })
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
-    })
-    .then((value) => {
-      res.status(200).json({
-        message: "Fetched Docs successfully.",
-        users: value,
-        totalUsers: totalUsers,
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
 };
 
 exports.verifyAndStore = (req, res, next) => {

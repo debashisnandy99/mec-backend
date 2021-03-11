@@ -30,8 +30,6 @@ router.post('/login', adminAuthController.login);
 
 
 router.get("/pendingVerification/:page",isAuth,adminVerificationDocumentsController.getPedingVerification);
-router.get("/upcomingVerification/:page",isAuth,adminVerificationDocumentsController.getUpComingVerification);
-router.get("/verified-user/:page",isAuth,adminVerificationDocumentsController.getVerifiedUser);
 router.post("/verifyandstore",isAuth,adminVerificationDocumentsController.verifyAndStore);
 
 module.exports = router;

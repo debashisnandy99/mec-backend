@@ -15,7 +15,6 @@ exports.signup = (req, res, next) => {
   const username = req.body.username;
   const name = req.body.name;
   const password = req.body.password;
-  const department = req.body.department;
   bcrypt
     .hash(password, 12)
     .then((hashedPw) => {
@@ -67,7 +66,7 @@ exports.login = (req, res, next) => {
           department: loadedUser.department,
         },
         "mecidgov142gfgg",
-        { expiresIn: "5h" }
+        { expiresIn: "24h" }
       );
       res.status(200).json({ token: token, userId: loadedUser._id.toString() });
     })
