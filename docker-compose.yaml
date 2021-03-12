@@ -1,15 +1,15 @@
 version: "3.8"
 services:
-  # ipfs:
-  #   image: "ipfs/go-ipfs:latest"
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - ./tmp/ipfs-docker-staging:/export
-  #     - ./tmp/ipfs-docker-data:/data/ipfs
+  ipfs:
+    image: "ipfs/go-ipfs:latest"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./tmp/ipfs-docker-staging:/export
+      - ./tmp/ipfs-docker-data:/data/ipfs
   # ganache:
   #   image: "trufflesuite/ganache-cli:latest"
-  #   ports: 
+  #   ports:
   #     - "8545:8545"
   #   depends_on:
   #     - ipfs
@@ -23,8 +23,8 @@ services:
       - /app/node_modules
     env_file:
       - ./env/backend.env
-    # depends_on:
-    #   - ipfs
+    depends_on:
+      - ipfs
 
 volumes:
   images: {}

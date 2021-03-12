@@ -24,49 +24,19 @@ exports.getVerification = (req, res, next) => {
 
   console.log(docsHeader);
 
-  if (docsHeader == "pending") {
-    Utils.getPendingDocuments(req.department, currentPage, perPage)
-      .then((value) => {
-        res.status(200).json({
-          message: "Fetched Docs successfully.",
-          doc: value,
-        });
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
+  Utils.getDocuments(req.department, currentPage, perPage, docsHeader)
+    .then((value) => {
+      res.status(200).json({
+        message: "Fetched Docs successfully.",
+        doc: value,
       });
-  } else if (docsHeader == "verified") {
-    Utils.getVerifiedDocuments(req.department, currentPage, perPage)
-      .then((value) => {
-        res.status(200).json({
-          message: "Fetched Docs successfully.",
-          doc: value,
-        });
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  } else if (docsHeader == "fail") {
-    Utils.getVerifiedDocuments(req.department, currentPage, perPage)
-      .then((value) => {
-        res.status(200).json({
-          message: "Fetched Docs successfully.",
-          doc: value,
-        });
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  }
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
 
 exports.verifyDocs = (req, res, next) => {
@@ -79,9 +49,15 @@ exports.verifyDocs = (req, res, next) => {
   }
 
   const status = req.body.status;
-  
 
-  Utils.startVerification(req.department, status, req.file, res, next);
+  Utils.startVerification(
+    req.department,
+    req.body.uid,
+    status,
+    req.file,
+    res,
+    next
+  );
 };
 
 // add department

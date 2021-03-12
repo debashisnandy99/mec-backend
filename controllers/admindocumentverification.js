@@ -1,5 +1,10 @@
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
+var fs = require("fs");
+const ipfsClient = require("ipfs-http-client");
+const path = require("path");
+const Web3 = require("web3");
+const rimraf = require("rimraf");
 const Document = require("../models/document");
 const Department = require("../models/department");
 
@@ -56,7 +61,6 @@ exports.getPedingVerification = (req, res, next) => {
       }
       next(err);
     });
-
 };
 
 exports.verifyAndStore = (req, res, next) => {
@@ -73,37 +77,68 @@ exports.verifyAndStore = (req, res, next) => {
 };
 
 const addToIpfs = async (uid, res, next) => {
-  const user = await User.findOne({
-    _id: uid,
-  }).select({
-    email: 1,
-  });
+  // const user = await User.findOne({
+  //   _id: uid,
+  // }).select({
+  //   email: 1,
+  // });
+  String.prototype.splice = function (idx, rem, str) {
+    return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
+  };
 
   let web3 = new Web3(new Web3.providers.HttpProvider("http://ganache:8545"));
-
-  const accountsEth = await web3.eth.getAccounts();
-
-  // web3.eth.getTransaction('0x2740fc6670b4a3cc1ca29e1f03164233ca99e175615c5e20de064c1b669a3a7d')
-  //   .then(result => {
-  //     let valu = web3.eth.abi.decodeParameter('string', '0x' + result.input.slice(10));
-  //     console.log(valu);
-  //     res.status(200).json({
-  //       message: valu,
-  //     });
-  //   });
-
   const ipfs = ipfsClient("http://ipfs:5001");
+  let mecId;
   const { globSource } = ipfsClient;
+  let docs;
+  const accountsEth = await web3.eth.getAccounts();
+  let dir;
 
-  ipfs
-    .add(
-      globSource("./images/" + user.email, {
-        recursive: true,
-      })
-    )
+  User.findOne({
+    _id: uid,
+  })
+    .then((userValue) => {
+      mecId = Date.now()
+        .toString()
+        .splice(
+          Math.floor(Math.random() * 10) + 1,
+          0,
+          userValue.name.slice(0, 3)
+        );
+      dir = makeDir(mecId);
+      renameFile(
+        userValue.photo,
+        dir + "/profile" + path.parse(userValue.photo).ext,
+        next
+      );
+      renameFile(
+        userValue.signature,
+        dir + "/signature" + path.parse(userValue.signature).ext,
+        next
+      );
+      return Document.find({
+        user: uid,
+      }).populate("depId", {
+        name: 1,
+      });
+    })
+    .then((value) => {
+      value.forEach((doc) => {
+        renameFile(
+          doc.file,
+          dir + "/" + doc.depId.name + path.parse(doc.file).ext,
+          next
+        );
+      });
+      return ipfs.add(
+        globSource("./" + dir, {
+          recursive: true,
+        })
+      );
+    })
     .then((file) => {
       console.log(file.cid.toString());
-      rimraf("./images/" + user.email, function () {
+      rimraf("./" + dir, function () {
         web3.eth.defaultAccount = accountsEth[0];
         var fileHash = new web3.eth.Contract(
           [
@@ -149,10 +184,12 @@ const addToIpfs = async (uid, res, next) => {
           .on("receipt", function (receipt) {
             User.updateOne(
               {
-                _id: req.userId,
+                _id: uid,
               },
               {
-                transactionHash: file.cid.toString(),
+                $push: {
+                  transactionHash: receipt.transactionHash,
+                },
               },
               function (err, raw) {
                 if (err) {
@@ -161,6 +198,7 @@ const addToIpfs = async (uid, res, next) => {
                   }
                   next(err);
                 } else {
+                  console.log(receipt);
                   res.status(200).json({
                     message: "received",
                   });
@@ -177,4 +215,30 @@ const addToIpfs = async (uid, res, next) => {
           });
       });
     });
+};
+
+const makeDir = (mecId) => {
+  let dir = "images/" + mecId;
+  if (!fs.existsSync(dir)) {
+    try {
+      fs.mkdirSync(dir);
+    } catch (err) {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    }
+  }
+  return dir;
+};
+
+const renameFile = (oldPath, newPath, next) => {
+  try {
+    fs.renameSync(oldPath, newPath);
+  } catch (err) {
+    if (!err) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 };
