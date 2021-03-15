@@ -6,6 +6,7 @@ const adminAuthController = require("../controllers/admin");
 
 const adminVerificationDocumentsController = require("../controllers/admindocumentverification");
 const isAuth = require('../middleware/is-auth');
+const birthCertController = require("../controllers/birthcertificateissue");
 
 const router = express.Router();
 
@@ -31,5 +32,5 @@ router.post('/login', adminAuthController.login);
 
 router.get("/pendingVerification/:page",isAuth,adminVerificationDocumentsController.getPedingVerification);
 router.post("/verifyandstore",isAuth,adminVerificationDocumentsController.verifyAndStore);
-
+router.post("/verifyoung",birthCertController.verifyInAdminLevelAndStore);
 module.exports = router;

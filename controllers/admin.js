@@ -21,7 +21,7 @@ exports.signup = (req, res, next) => {
       const user = new User({
         username: username,
         password: hashedPw,
-        name: name
+        name: name,
       });
       return user.save();
     })
@@ -68,7 +68,13 @@ exports.login = (req, res, next) => {
         "mecidgov142gfgg",
         { expiresIn: "24h" }
       );
-      res.status(200).json({ token: token, userId: loadedUser._id.toString() });
+      res
+        .status(200)
+        .json({
+          token: token,
+          userId: loadedUser._id.toString(),
+          department: "admin",
+        });
     })
     .catch((err) => {
       if (!err.statusCode) {

@@ -3,6 +3,7 @@ const { body } = require("express-validator");
 
 const User = require("../models/issuer");
 const authController = require("../controllers/issuer");
+const birthCertController = require("../controllers/birthcertificateissue");
 
 const verificationdocumentsController = require("../controllers/verificationdocuments");
 const isAuthVerifier = require("../middleware/is-auth-verifier");
@@ -42,6 +43,18 @@ router.post(
   [body("uid").trim().not().isEmpty()],
   isAuthVerifier,
   verificationdocumentsController.verifyDocs
+);
+router.put(
+  "/birthcert",
+  [
+    body("father").trim().not().isEmpty(),
+    body("mother").trim().not().isEmpty(),
+    body("dob").trim().not().isEmpty(),
+    body("name").trim().not().isEmpty(),
+    body("docid").trim().not().isEmpty(),
+  ],
+  isAuthVerifier,
+  birthCertController.generateBirthCertificate
 );
 router.post("/depreg", verificationdocumentsController.addDepartment);
 module.exports = router;

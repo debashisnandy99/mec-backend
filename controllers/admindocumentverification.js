@@ -190,6 +190,9 @@ const addToIpfs = async (uid, res, next) => {
                 $push: {
                   transactionHash: receipt.transactionHash,
                 },
+                $set: {
+                  mecId: mecId,
+                },
               },
               function (err, raw) {
                 if (err) {
