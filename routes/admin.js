@@ -30,7 +30,7 @@ router.put(
 router.post('/login', adminAuthController.login);
 
 
-router.get("/pendingVerification/:page",isAuth,adminVerificationDocumentsController.getPedingVerification);
+router.get("/pendingVerification",isAuth,adminVerificationDocumentsController.getPedingVerification);
 router.post("/verifyandstore",isAuth,adminVerificationDocumentsController.verifyAndStore);
 router.post("/verifyoung",birthCertController.verifyInAdminLevelAndStore);
 module.exports = router;

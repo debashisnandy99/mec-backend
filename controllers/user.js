@@ -2,7 +2,8 @@ const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const Web3 = require("web3");
+const http = require('http');
 const User = require("../models/user");
 const Department = require("../models/department");
 const Document = require("../models/document");
@@ -68,7 +69,7 @@ exports.signup = (req, res, next) => {
     });
 };
 
-exports.uploadDetails = (req, res, next) => {
+exports.uploadDetails = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -83,6 +84,7 @@ exports.uploadDetails = (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
+  let user, userM;
   const dob = req.body.dob;
   const fathersName = req.body.fathersName;
   const mothersName = req.body.mothersName;
@@ -182,7 +184,7 @@ exports.checkMecIdExists = (req, res, next) => {
 
   const mecId = req.body.mec;
 
-  User.find({
+  User.findOne({
     mecId: mecId,
   })
     .then((value) => {
@@ -191,10 +193,62 @@ exports.checkMecIdExists = (req, res, next) => {
         error.statusCode = 401;
         throw error;
       }
+      console.log(mecId);
 
       res.status(200).json({
         status: 1,
         message: "Founded",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.getDetails = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed.");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
+  const phone = req.body.phone;
+  var user;
+
+  User.findOne({
+    phone: phone,
+  })
+    .then((value) => {
+      if (!value) {
+        const error = new Error("User with this phone not found");
+        error.statusCode = 401;
+        throw error;
+      }
+      if (value.mecId) {
+        const error = new Error("User Already Verified");
+        error.statusCode = 401;
+        throw error;
+      }
+      user = value;
+      return Document.find({
+        user: user,
+      }).populate("depId");
+    })
+    .then((value) => {
+      if (value.length == 0) {
+        const error = new Error("Already Verified. Please login.");
+        error.statusCode = 401;
+        throw error;
+      }
+      res.status(200).json({
+        user: user,
+        docs: value,
       });
     })
     .catch((err) => {
@@ -214,7 +268,7 @@ exports.login = (req, res, next) => {
     error.data = errors.array();
     throw error;
   }
-  const email = req.body.email;
+  const phone = req.body.phone;
   const password = req.body.password;
   let loadedUser;
   var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -228,11 +282,11 @@ exports.login = (req, res, next) => {
 
   //console.log(email);
   User.findOne({
-    email: email,
+    phone: phone,
   })
     .then((user) => {
       if (!user) {
-        const error = new Error("A user with this email could not be found.");
+        const error = new Error("A user with this phone could not be found.");
         error.statusCode = 401;
         throw error;
       }
@@ -260,7 +314,7 @@ exports.login = (req, res, next) => {
     .then((result) => {
       const token = jwt.sign(
         {
-          email: loadedUser.email,
+          phone: loadedUser.phone,
           userId: loadedUser._id.toString(),
         },
         "mecidgov142gfgg",
@@ -271,6 +325,37 @@ exports.login = (req, res, next) => {
       res.status(200).json({
         token: token,
         userId: loadedUser._id.toString(),
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.getValidateDetails = (req, res, next) => {
+  let web3 = new Web3(new Web3.providers.HttpProvider("http://ganache:8545"));
+
+  let user;
+  User.findOne({
+    _id: req.userId,
+  })
+    .then((res) => {
+      user = res;
+      return web3.eth.getTransaction(
+        res.transactionHash[res.transactionHash.length - 1].toString()
+      );
+    })
+    .then((result) => {
+      let valu = web3.eth.abi.decodeParameter(
+        "string",
+        "0x" + result.input.slice(10)
+      );
+      res.status(200).json({
+        ipfsHash: valu,
+        user: user,
       });
     })
     .catch((err) => {

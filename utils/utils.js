@@ -9,7 +9,11 @@ const User = require("../models/user");
 const Document = require("../models/document");
 
 exports.getDocuments = async (department, currentPage, perPage, status) => {
-  return Document.find({ depId: department, status: status })
+  const count = await Document.find({
+    depId: department,
+    status: status,
+  }).countDocuments();
+  const docs = await Document.find({ depId: department, status: status })
     .populate("user", {
       name: 1,
       dob: 1,
@@ -17,9 +21,12 @@ exports.getDocuments = async (department, currentPage, perPage, status) => {
       mothersName: 1,
       address: 1,
       phone: 1,
+      photo: 1,
+      signature: 1
     })
     .skip((currentPage - 1) * perPage)
     .limit(perPage);
+  return { totalItems: count, docs: docs };
 };
 
 exports.startVerification = async (

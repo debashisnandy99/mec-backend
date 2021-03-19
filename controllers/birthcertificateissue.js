@@ -9,7 +9,7 @@ const YoungUser = require("../models/young");
 const Department = require("../models/department");
 const User = require("../models/user");
 
-exports.generateBirthCertificate = (req, res, next) => {
+exports.generateBirthCertificate = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -105,7 +105,7 @@ exports.verifyInAdminLevelAndStore = (req, res, next) => {
   addToIpfs(userId, res, next);
 }
 
-const addToIpfs = (uid, res, next) => {
+const addToIpfs = async (uid, res, next) => {
   String.prototype.splice = function (idx, rem, str) {
     return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
   };

@@ -8,7 +8,7 @@ const rimraf = require("rimraf");
 const Document = require("../models/document");
 const Department = require("../models/department");
 
-exports.getPedingVerification = (req, res, next) => {
+exports.getPedingVerification = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -25,13 +25,26 @@ exports.getPedingVerification = (req, res, next) => {
   }
   const currentPage = req.query.page || 1;
   const perPage = 8;
-
-  Document.aggregate([
+  let arr = await Document.aggregate([
     {
       $match: {
         status: docsHeader,
       },
     },
+    {
+      $group: {
+        _id: "$user",
+        docs: {
+          $push: "$$ROOT",
+        },
+      },
+    },
+  ]);
+
+  let totalItem = arr.length;
+
+  Document.aggregate([
+    
     {
       $group: {
         _id: "$user",
@@ -53,6 +66,7 @@ exports.getPedingVerification = (req, res, next) => {
       res.status(200).json({
         message: "Fetched Docs successfully.",
         users: value,
+        totalItem: totalItem,
       });
     })
     .catch((err) => {

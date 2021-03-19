@@ -34,7 +34,7 @@ router.put(
 router.post("/login", authController.login);
 
 router.get(
-  "/getlist/:page",
+  "/getlist",
   isAuthVerifier,
   verificationdocumentsController.getVerification
 );

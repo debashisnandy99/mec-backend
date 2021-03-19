@@ -17,9 +17,6 @@ const userSchema = new Schema(
     dob: {
       type: String,
     },
-    doi: {
-      type: String,
-    },
     fathersName: {
       type: String,
     },
