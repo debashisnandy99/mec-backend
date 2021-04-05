@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Web3 = require("web3");
-const http = require('http');
+const http = require("http");
 const User = require("../models/user");
 const Department = require("../models/department");
 const Document = require("../models/document");
@@ -19,28 +19,19 @@ exports.signup = (req, res, next) => {
     throw error;
   }
 
-  if (!req.file) {
-    const error = new Error("No image provided.");
-    error.statusCode = 422;
-    throw error;
-  }
-
-  const email = req.body.email;
+  const gender = req.body.gender;
   const name = req.body.name;
   const password = req.body.password;
   const phone = req.body.phone;
-
-  const photo = req.file.path;
 
   bcrypt
     .hash(password, 12)
     .then((hashedPw) => {
       const user = new User({
-        email: email,
+        phone: phone,
         password: hashedPw,
         name: name,
-        phone: phone,
-        photo: photo,
+        gender: gender,
       });
       return user.save();
     })
@@ -67,6 +58,198 @@ exports.signup = (req, res, next) => {
       }
       next(err);
     });
+};
+
+exports.formNoOne = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed.");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
+  const gender = req.body.gender;
+  const name = req.body.name;
+  const phone = req.body.phone;
+  const dob = req.body.dob;
+  const email = req.body.email;
+
+  User.updateOne(
+    {
+      _id: req.userId,
+    },
+    {
+      dob: dob,
+      email: email,
+      phone: phone,
+      name: name,
+      gender: gender,
+    },
+    function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      } else if (raw.n == 0) {
+        const error = new Error("No user found");
+        error.statusCode = 422;
+        throw error;
+      } else {
+        res.status(200).json({
+          status: 1,
+          message: "Uploaded successfully.",
+        });
+      }
+    }
+  );
+};
+
+exports.formNoTwo = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed.");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
+  const address = req.body.address;
+  const state = req.body.state;
+  const district = req.body.district;
+  let isAddressSame = req.body.isAddressSame;
+  let user;
+  if (isAddressSame === "false") {
+    if (!req.body.paddress) {
+      const error = new Error("Present address not found");
+      error.statusCode = 422;
+      throw error;
+    }
+    if (!req.body.pstate) {
+      const error = new Error("Present state not found");
+      error.statusCode = 422;
+      throw error;
+    }
+    if (!req.body.pdistrict) {
+      const error = new Error("Present district not found");
+      error.statusCode = 422;
+      throw error;
+    }
+    user = {
+      address: address,
+      state: state,
+      district: district,
+      isAddressSame: false,
+      paddress: req.body.paddress,
+      pstate: req.body.pstate,
+      paddress: req.body.paddress,
+    };
+  } else if (isAddressSame === "true") {
+    user = {
+      address: address,
+      state: state,
+      district: district,
+      isAddressSame: true,
+    };
+  } else {
+    const error = new Error("Invalid 'isAddressSame'");
+    error.statusCode = 422;
+    throw error;
+  }
+
+  User.updateOne(
+    {
+      _id: req.userId,
+    },
+    user,
+    function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      } else if (raw.n == 0) {
+        const error = new Error("No user found");
+        error.statusCode = 422;
+        throw error;
+      } else {
+        res.status(200).json({
+          status: 1,
+          message: "Uploaded successfully.",
+        });
+      }
+    }
+  );
+};
+
+exports.formNoThree = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed.");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
+  const mname = req.body.mname;
+  const fname = req.body.fname;
+  let fstatus;
+  let mstatus;
+  const fmecID = req.body.fmecID;
+  const mmecID = req.body.mmecID;
+  if (req.body.fstatus == "true") {
+    fstatus = true;
+  } else if (req.body.fstatus == "false") {
+    fstatus = false;
+  } else {
+    const error = new Error("Invalid 'fstatus'");
+    error.statusCode = 422;
+    throw error;
+  }
+
+  if (req.body.mstatus == "true") {
+    mstatus = true;
+  } else if (req.body.mstatus == "false") {
+    mstatus = false;
+  } else {
+    const error = new Error("Invalid 'fstatus'");
+    error.statusCode = 422;
+    throw error;
+  }
+  User.updateOne(
+    {
+      _id: req.userId,
+    },
+    {
+      mothersName: mname,
+      fathersName: fname,
+      fathersMecId: fmecID,
+      mothersMecId: mmecID,
+      fathersStatus: fstatus,
+      mothersStatus: mstatus,
+    },
+    function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      } else if (raw.n == 0) {
+        const error = new Error("No user found");
+        error.statusCode = 422;
+        throw error;
+      } else {
+        res.status(200).json({
+          status: 1,
+          message: "Uploaded successfully.",
+        });
+      }
+    }
+  );
 };
 
 exports.uploadDetails = async (req, res, next) => {

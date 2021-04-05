@@ -15,6 +15,7 @@ router.put(
     min: 5,
   }),
   body("name").trim().not().isEmpty(),
+  body("gender").trim().not().isEmpty(),
   body("phone")
     .trim()
     .not()
@@ -30,6 +31,38 @@ router.put(
     }),
 
   authController.signup
+);
+
+router.put(
+  "/firstForm",
+
+  body("name").trim().not().isEmpty(),
+  body("dob").trim().not().isEmpty(),
+  body("gender").trim().not().isEmpty(),
+  body("phone").trim().not().isEmpty(),
+  isAuth,
+  authController.formNoOne
+);
+
+router.put(
+  "/secondForm",
+
+  body("address").trim().not().isEmpty(),
+  body("state").trim().not().isEmpty(),
+  body("district").trim().not().isEmpty(),
+  body("isAddressSame").trim().not().isEmpty(),
+  isAuth,
+  authController.formNoTwo
+);
+
+router.put(
+  "/thirdForm",
+  body("fname").trim().not().isEmpty(),
+  body("mname").trim().not().isEmpty(),
+  body("mstatus").trim().not().isEmpty(),
+  body("fstatus").trim().not().isEmpty(),
+  isAuth,
+  authController.formNoThree
 );
 
 router.put(
@@ -51,11 +84,7 @@ router.put(
   authController.uploadOtherDetails
 );
 
-router.get(
-  "/getValidateDetails",
-  isAuth,
-  authController.getValidateDetails
-);
+router.get("/getValidateDetails", isAuth, authController.getValidateDetails);
 
 router.post(
   "/login",

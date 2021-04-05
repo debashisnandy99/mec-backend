@@ -14,6 +14,10 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    gender: {
+      type: String,
+      required: true,
+    },
     dob: {
       type: String,
     },
@@ -23,14 +27,38 @@ const userSchema = new Schema(
     mothersName: {
       type: String,
     },
+    fathersStatus: {
+      type: Boolean
+    },
     fathersMecId: {
       type: String,
+    },
+    mothersStatus: {
+      type: Boolean
     },
     mothersMecId: {
       type: String,
     },
     address: {
       type: String,
+    },
+    state: {
+      type: String,
+    },
+    district: {
+      type: String,
+    },
+    paddress: {
+      type: String,
+    },
+    pstate: {
+      type: String,
+    },
+    pdistrict: {
+      type: String,
+    },
+    isAddressSame: {
+      type: Boolean,
     },
     transactionHash: [
       {
