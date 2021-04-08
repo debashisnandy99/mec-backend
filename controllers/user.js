@@ -317,10 +317,10 @@ exports.uploadOtherDetails = async (req, res, next) => {
       message: "Uploaded successfully.",
     });
   } catch (error) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
+    if (!error.statusCode) {
+      error.statusCode = 500;
     }
-    next(err);
+    next(error);
   }
 };
 
