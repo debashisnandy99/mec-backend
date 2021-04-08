@@ -65,24 +65,10 @@ router.put(
   authController.formNoThree
 );
 
-router.put(
-  "/detailsUp",
-  [
-    body("dob").trim().not().isEmpty(),
-    body("fathersName").trim().not().isEmpty(),
-    body("mothersName").trim().not().isEmpty(),
-    body("address").trim().not().isEmpty(),
-  ],
-  isAuth,
-  authController.uploadDetails
-);
+router.put("/forthForm", isAuth, authController.formNoFour);
 
-router.put(
-  "/fileUpload",
-  [body("docid").trim().not().isEmpty()],
-  isAuth,
-  authController.uploadOtherDetails
-);
+router.put("/fileUpload", isAuth, authController.uploadOtherDetails);
+router.get("/getDocs", isAuth, authController.getDocs);
 
 router.get("/getValidateDetails", isAuth, authController.getValidateDetails);
 
@@ -100,6 +86,8 @@ router.post(
   [body("mec").trim().not().isEmpty()],
   authController.checkMecIdExists
 );
+
+router.get("/userDetails", isAuth, authController.getUser);
 
 router.post(
   "/getdetails",

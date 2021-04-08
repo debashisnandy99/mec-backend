@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Web3 = require("web3");
 const http = require("http");
+const uploadFile = require("../middleware/upload");
+const uploadDocsFile = require("../middleware/uploaddocs");
 const User = require("../models/user");
 const Department = require("../models/department");
 const Document = require("../models/document");
@@ -38,7 +40,7 @@ exports.signup = (req, res, next) => {
     .then((result) => {
       const token = jwt.sign(
         {
-          email: result.phone,
+          phone: result.phone,
           userId: result._id.toString(),
         },
         "mecidgov142gfgg",
@@ -76,35 +78,35 @@ exports.formNoOne = (req, res, next) => {
   const dob = req.body.dob;
   const email = req.body.email;
 
-  User.updateOne(
-    {
-      _id: req.userId,
-    },
-    {
-      dob: dob,
-      email: email,
-      phone: phone,
-      name: name,
-      gender: gender,
-    },
-    function (err, raw) {
-      if (err) {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      } else if (raw.n == 0) {
+  User.findOne({
+    _id: req.userId,
+  })
+    .then((user) => {
+      if (!user) {
         const error = new Error("No user found");
         error.statusCode = 422;
         throw error;
-      } else {
-        res.status(200).json({
-          status: 1,
-          message: "Uploaded successfully.",
-        });
       }
-    }
-  );
+      user.dob = dob;
+      user.email = email;
+      user.phone = phone;
+      user.name = name;
+      user.gender = gender;
+
+      return user.save();
+    })
+    .then((result) => {
+      res.status(200).json({
+        status: 1,
+        message: "Uploaded successfully.",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
 
 exports.formNoTwo = (req, res, next) => {
@@ -122,67 +124,62 @@ exports.formNoTwo = (req, res, next) => {
   const district = req.body.district;
   let isAddressSame = req.body.isAddressSame;
   let user;
-  if (isAddressSame === "false") {
-    if (!req.body.paddress) {
-      const error = new Error("Present address not found");
-      error.statusCode = 422;
-      throw error;
-    }
-    if (!req.body.pstate) {
-      const error = new Error("Present state not found");
-      error.statusCode = 422;
-      throw error;
-    }
-    if (!req.body.pdistrict) {
-      const error = new Error("Present district not found");
-      error.statusCode = 422;
-      throw error;
-    }
-    user = {
-      address: address,
-      state: state,
-      district: district,
-      isAddressSame: false,
-      paddress: req.body.paddress,
-      pstate: req.body.pstate,
-      paddress: req.body.paddress,
-    };
-  } else if (isAddressSame === "true") {
-    user = {
-      address: address,
-      state: state,
-      district: district,
-      isAddressSame: true,
-    };
-  } else {
-    const error = new Error("Invalid 'isAddressSame'");
-    error.statusCode = 422;
-    throw error;
-  }
 
-  User.updateOne(
-    {
-      _id: req.userId,
-    },
-    user,
-    function (err, raw) {
-      if (err) {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      } else if (raw.n == 0) {
+  User.findOne({
+    _id: req.userId,
+  })
+    .then((user) => {
+      if (!user) {
         const error = new Error("No user found");
         error.statusCode = 422;
         throw error;
-      } else {
-        res.status(200).json({
-          status: 1,
-          message: "Uploaded successfully.",
-        });
       }
-    }
-  );
+      if (isAddressSame === "false") {
+        if (!req.body.paddress) {
+          const error = new Error("Present address not found");
+          error.statusCode = 422;
+          throw error;
+        }
+        if (!req.body.pstate) {
+          const error = new Error("Present state not found");
+          error.statusCode = 422;
+          throw error;
+        }
+        if (!req.body.pdistrict) {
+          const error = new Error("Present district not found");
+          error.statusCode = 422;
+          throw error;
+        }
+
+        user.isAddressSame = false;
+        user.paddress = req.body.paddress;
+        user.pstate = req.body.pstate;
+        user.paddress = req.body.paddress;
+      } else if (isAddressSame === "true") {
+        user.isAddressSame = true;
+      } else {
+        const error = new Error("Invalid 'isAddressSame'");
+        error.statusCode = 422;
+        throw error;
+      }
+      user.address = address;
+      user.state = state;
+      user.district = district;
+
+      return user.save();
+    })
+    .then((result) => {
+      res.status(200).json({
+        status: 1,
+        message: "Uploaded successfully.",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
 
 exports.formNoThree = (req, res, next) => {
@@ -197,115 +194,91 @@ exports.formNoThree = (req, res, next) => {
 
   const mname = req.body.mname;
   const fname = req.body.fname;
-  let fstatus;
-  let mstatus;
+  const fstatus = req.body.fstatus;
+  const mstatus = req.body.mstatus;
   const fmecID = req.body.fmecID;
   const mmecID = req.body.mmecID;
-  if (req.body.fstatus == "true") {
-    fstatus = true;
-  } else if (req.body.fstatus == "false") {
-    fstatus = false;
-  } else {
-    const error = new Error("Invalid 'fstatus'");
-    error.statusCode = 422;
-    throw error;
-  }
 
-  if (req.body.mstatus == "true") {
-    mstatus = true;
-  } else if (req.body.mstatus == "false") {
-    mstatus = false;
-  } else {
-    const error = new Error("Invalid 'fstatus'");
-    error.statusCode = 422;
-    throw error;
-  }
-  User.updateOne(
-    {
-      _id: req.userId,
-    },
-    {
-      mothersName: mname,
-      fathersName: fname,
-      fathersMecId: fmecID,
-      mothersMecId: mmecID,
-      fathersStatus: fstatus,
-      mothersStatus: mstatus,
-    },
-    function (err, raw) {
-      if (err) {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      } else if (raw.n == 0) {
+  User.findOne({
+    _id: req.userId,
+  })
+    .then((user) => {
+      if (!user) {
         const error = new Error("No user found");
         error.statusCode = 422;
         throw error;
-      } else {
+      }
+      user.mothersName = mname;
+      user.fathersName = fname;
+      user.fathersMecId = fmecID;
+      user.mothersMecId = mmecID;
+      user.fathersStatus = fstatus;
+      user.mothersStatus = mstatus;
+
+      return user.save();
+    })
+    .then((result) => {
+      res.status(200).json({
+        status: 1,
+        message: "Uploaded successfully.",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.formNoFour = async (req, res, next) => {
+  try {
+    await uploadFile(req, res);
+    if (req.files == undefined) {
+      const error = new Error("Please Upload Files");
+      error.statusCode = 422;
+      throw error;
+    }
+    if (req.files.length == 1) {
+      const error = new Error("Please Upload Files");
+      error.statusCode = 422;
+      throw error;
+    }
+    User.findOne({
+      _id: req.userId,
+    })
+      .then((user) => {
+        if (!user) {
+          const error = new Error("No user found");
+          error.statusCode = 422;
+          throw error;
+        }
+        user.photo = req.files.photo[0].path;
+        user.signature = req.files.signature[0].path;
+        user.isVerified = true;
+        return user.save();
+      })
+      .then((result) => {
         res.status(200).json({
           status: 1,
           message: "Uploaded successfully.",
         });
-      }
-    }
-  );
-};
-
-exports.uploadDetails = async (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const error = new Error("Validation failed.");
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
-  }
-
-  if (!req.file) {
-    const error = new Error("No image provided.");
-    error.statusCode = 422;
-    throw error;
-  }
-  let user, userM;
-  const dob = req.body.dob;
-  const fathersName = req.body.fathersName;
-  const mothersName = req.body.mothersName;
-  const mothersMecId = req.body.mothersmecid;
-  const fathersMecId = req.body.fathersmecid;
-  const address = req.body.address;
-  const signature = req.file.path;
-
-  User.updateOne(
-    {
-      _id: req.userId,
-    },
-    {
-      dob: dob,
-      fathersName: fathersName,
-      mothersName: mothersName,
-      address: address,
-      mothersMecId: mothersMecId,
-      fathersMecId: fathersMecId,
-      signature: signature,
-    },
-    function (err, raw) {
-      if (err) {
+      })
+      .catch((err) => {
         if (!err.statusCode) {
           err.statusCode = 500;
         }
         next(err);
-      } else {
-        res.status(200).json({
-          status: 1,
-          message: "Uploaded successfully.",
-        });
-      }
+      });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
     }
-  );
+    next(err);
+  }
 };
 
-exports.uploadOtherDetails = (req, res, next) => {
+exports.uploadOtherDetails = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -315,36 +288,53 @@ exports.uploadOtherDetails = (req, res, next) => {
     throw error;
   }
 
-  if (!req.file) {
-    const error = new Error("No image provided.");
-    error.statusCode = 422;
-    throw error;
+  try {
+    await uploadDocsFile(req, res);
+    if (!req.file) {
+      const error = new Error("No image provided.");
+      error.statusCode = 422;
+      throw error;
+    }
+    const docid = req.body.docid;
+    const file = req.file.path;
+    const value = await Department.findOne({ name: req.body.dep });
+    if (!value) {
+      const error = new Error(
+        "A department with this name could not be found."
+      );
+      error.statusCode = 401;
+      throw error;
+    }
+    const document = new Document({
+      depId: value,
+      docId: docid,
+      user: mongoose.Types.ObjectId(req.userId),
+      file: file,
+    });
+    await document.save();
+    res.status(200).json({
+      status: 1,
+      message: "Uploaded successfully.",
+    });
+  } catch (error) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
+};
 
-  const docid = req.body.docid;
-  const file = req.file.path;
-
-  Department.findOne({ name: req.body.dep })
-    .then((value) => {
-      if (!value) {
-        const error = new Error(
-          "A department with this name could not be found."
-        );
-        error.statusCode = 401;
-        throw error;
-      }
-      const document = new Document({
-        depId: value,
-        docId: docid,
-        user: mongoose.Types.ObjectId(req.userId),
-        file: file,
-      });
-      return document.save();
-    })
-    .then((value) => {
+exports.getDocs = (req, res, next) => {
+  
+  Document.find({ user: req.userId })
+  .populate("depId",{
+    _id:0,
+    name:1
+  })
+    .then((val) => {
       res.status(200).json({
         status: 1,
-        message: "Uploaded successfully.",
+        docs: val,
       });
     })
     .catch((err) => {
@@ -474,11 +464,7 @@ exports.login = (req, res, next) => {
         throw error;
       }
       loadedUser = user;
-      if (!user.mecId) {
-        const error = new Error("Account not verified");
-        error.statusCode = 401;
-        throw error;
-      }
+
       return bcrypt.compare(password, user.password);
     })
     .then((isEqual) => {
@@ -508,6 +494,24 @@ exports.login = (req, res, next) => {
       res.status(200).json({
         token: token,
         userId: loadedUser._id.toString(),
+        user: loadedUser,
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.getUser = (req, res, next) => {
+  User.findOne({
+    _id: req.userId,
+  })
+    .then((user) => {
+      res.status(200).json({
+        user,
       });
     })
     .catch((err) => {

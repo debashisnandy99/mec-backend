@@ -28,13 +28,13 @@ const userSchema = new Schema(
       type: String,
     },
     fathersStatus: {
-      type: Boolean
+      type: String,
     },
     fathersMecId: {
       type: String,
     },
     mothersStatus: {
-      type: Boolean
+      type: String,
     },
     mothersMecId: {
       type: String,
@@ -77,6 +77,10 @@ const userSchema = new Schema(
     },
     signature: {
       type: String,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
     services: [
       {
