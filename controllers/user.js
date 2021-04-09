@@ -485,6 +485,7 @@ exports.login = (req, res, next) => {
         {
           phone: loadedUser.phone,
           userId: loadedUser._id.toString(),
+          user: loadedUser
         },
         "mecidgov142gfgg",
         {
