@@ -78,6 +78,11 @@ const userSchema = new Schema(
     signature: {
       type: String,
     },
+    isMecVerify: {
+      type: String,
+      enum: ["pending", "verified", "fail"],
+      default: "pending",
+    },
     isVerified: {
       type: Boolean,
       default: false,

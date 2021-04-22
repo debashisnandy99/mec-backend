@@ -50,13 +50,34 @@ exports.signup = (req, res, next) => {
     });
 };
 
+exports.getUser = (req, res, next) => {
+  User.findOne({ _id: req.userId })
+    .populate("department")
+    .then((user) => {
+      if (!user) {
+        const error = new Error(
+          "A user with this username could not be found."
+        );
+        error.statusCode = 401;
+        throw error;
+      }
+      res.status(200).json(user);
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 exports.login = (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
   let loadedUser;
   //console.log(username);
   User.findOne({ username: username })
-    .populate('department')
+    .populate("department")
     .then((user) => {
       if (!user) {
         const error = new Error(

@@ -45,7 +45,7 @@ exports.signup = (req, res, next) => {
         },
         "mecidgov142gfgg",
         {
-          expiresIn: "24h",
+          expiresIn: "8h",
         }
       );
       res.status(201).json({
@@ -325,12 +325,11 @@ exports.uploadOtherDetails = async (req, res, next) => {
 };
 
 exports.getDocs = (req, res, next) => {
-  
   Document.find({ user: req.userId })
-  .populate("depId",{
-    _id:0,
-    name:1
-  })
+    .populate("depId", {
+      _id: 0,
+      name: 1,
+    })
     .then((val) => {
       res.status(200).json({
         status: 1,
@@ -485,7 +484,7 @@ exports.login = (req, res, next) => {
         {
           phone: loadedUser.phone,
           userId: loadedUser._id.toString(),
-          user: loadedUser
+          user: loadedUser,
         },
         "mecidgov142gfgg",
         {

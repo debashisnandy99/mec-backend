@@ -2,8 +2,10 @@ const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const Verifier = require("../models/issuer");
 const User = require("../models/user");
+const uploadDocsFile = require("../middleware/uploaddocs");
 const Department = require("../models/department");
 const Utils = require("../utils/utils");
+const Document = require("../models/document");
 
 exports.getVerification = (req, res, next) => {
   const errors = validationResult(req);
@@ -39,7 +41,7 @@ exports.getVerification = (req, res, next) => {
     });
 };
 
-exports.verifyDocs = (req, res, next) => {
+exports.verifyDocs = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -47,16 +49,58 @@ exports.verifyDocs = (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
+  try {
+    await uploadDocsFile(req, res);
+    if (!req.file) {
+      const error = new Error("No image provided.");
+      error.statusCode = 422;
+      throw error;
+    }
+    const status = req.body.status;
 
-  const status = req.body.status;
+    Utils.startVerification(
+      req.department,
+      req.body.uid,
+      status,
+      req.file,
+      res,
+      next
+    );
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
 
-  Utils.startVerification(
-    req.department,
-    req.body.uid,
-    status,
-    req.file,
-    res,
-    next
+exports.failedDocs = async (req, res, next) => {
+ console.log(req.body.uid);
+  Document.updateOne(
+    { user: req.body.uid, depId: req.department },
+    {
+      status: "fail",
+    },
+    function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      }
+      if (raw.nModified > 0) {
+        res.status(200).json({
+          message: "Verified successfully.",
+        });
+      } else {
+        if (err) {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        }
+      }
+    }
   );
 };
 

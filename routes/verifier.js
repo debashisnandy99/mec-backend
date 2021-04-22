@@ -32,6 +32,7 @@ router.put(
 );
 
 router.post("/login", authController.login);
+router.get("/user", isAuthVerifier,authController.getUser);
 
 router.get(
   "/getlist",
@@ -40,9 +41,13 @@ router.get(
 );
 router.post(
   "/verifydocs",
-  [body("uid").trim().not().isEmpty()],
   isAuthVerifier,
   verificationdocumentsController.verifyDocs
+);
+router.post(
+  "/faildocs",
+  isAuthVerifier,
+  verificationdocumentsController.failedDocs
 );
 router.put(
   "/birthcert",

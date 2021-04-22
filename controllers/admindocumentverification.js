@@ -44,7 +44,11 @@ exports.getPedingVerification = async (req, res, next) => {
   let totalItem = arr.length;
 
   Document.aggregate([
-    
+    {
+      $match: {
+        status: docsHeader,
+      },
+    },
     {
       $group: {
         _id: "$user",
@@ -57,16 +61,168 @@ exports.getPedingVerification = async (req, res, next) => {
     .skip((currentPage - 1) * perPage)
     .limit(perPage)
     .then((result) => {
-      return User.populate(result, { path: "docs.user" });
+      return User.populate(result, {
+        path: "docs.user",
+      });
     })
     .then((result) => {
-      return Department.populate(result, { path: "docs.depId" });
+      return Department.populate(result, {
+        path: "docs.depId",
+      });
     })
     .then((value) => {
       res.status(200).json({
         message: "Fetched Docs successfully.",
         users: value,
         totalItem: totalItem,
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.getPendingUsers = async (req, res, next) => {
+  const docsHeader = req.get("Docs");
+  if (!docsHeader) {
+    const error = new Error("Type of docs not specified");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const currentPage = req.query.page || 1;
+  const perPage = 8;
+  if (docsHeader == "pending") {
+    let totalItem = await User.find({
+      mecId: { $exists: false },
+      isMecVerify: { $ne: "fail" },
+    }).countDocuments();
+    User.find({ mecId: { $exists: false }, isMecVerify: { $ne: "fail" } })
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage)
+      .then((value) => {
+        res.status(200).json({
+          message: "Fetched Docs successfully.",
+          users: value,
+          totalItem: totalItem,
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  } else if (docsHeader == "verified") {
+    let totalItem = await User.find({
+      mecId: { $exists: true },
+      isMecVerify: { $ne: "fail" },
+    }).countDocuments();
+    User.find({ mecId: { $exists: true }, isMecVerify: { $ne: "fail" } })
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage)
+      .then((value) => {
+        res.status(200).json({
+          message: "Fetched Docs successfully.",
+          users: value,
+          totalItem: totalItem,
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  } else if (docsHeader == "failed") {
+    let totalItem = await User.find({
+      isMecVerify: "fail",
+    }).countDocuments();
+    User.find({ isMecVerify: "fail" })
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage)
+      .then((value) => {
+        res.status(200).json({
+          message: "Fetched Docs successfully.",
+          users: value,
+          totalItem: totalItem,
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  }
+};
+
+exports.getValidateDetails = (req, res, next) => {
+  let web3 = new Web3(new Web3.providers.HttpProvider("http://ganache:8545"));
+
+  User.findOne({
+    _id: req.body.uid,
+  })
+    .then((result) => {
+      console.log(result.transactionHash);
+      return web3.eth.getTransaction(
+        result.transactionHash[result.transactionHash.length - 1].toString()
+      );
+    })
+    .then((result) => {
+      console.log(result);
+      let valu = web3.eth.abi.decodeParameter(
+        "string",
+        "0x" + result.input.slice(10)
+      );
+      res.status(200).json({
+        ipfsHash: valu,
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.setFailedMec = (req, res, next) => {
+  User.updateOne(
+    { _id: req.body.uid },
+    {
+      isMecVerify: "fail",
+    },
+    function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      } else if (raw.nModified > 0) {
+        res.status(200).json({
+          message: "success",
+        });
+      } else {
+        res.status(401).json({
+          message: "failed",
+        });
+      }
+    }
+  );
+};
+
+exports.getDocsOfUser = (req, res, next) => {
+  console.log(req.body.uid);
+  Document.find({ user: req.body.uid })
+    .populate("depId")
+    .then((value) => {
+      res.status(200).json({
+        message: "Fetched Docs successfully.",
+        docs: value,
       });
     })
     .catch((err) => {
@@ -187,7 +343,7 @@ const addToIpfs = async (uid, res, next) => {
               type: "function",
             },
           ],
-          "0xF431A059a910E46699da3c95f0405B824030F06B"
+          "0x2De00abB05374B5F186143453822A4dA3cd16cb1"
         );
 
         fileHash.methods
@@ -206,6 +362,7 @@ const addToIpfs = async (uid, res, next) => {
                 },
                 $set: {
                   mecId: mecId,
+                  isMecVerify: "verified",
                 },
               },
               function (err, raw) {

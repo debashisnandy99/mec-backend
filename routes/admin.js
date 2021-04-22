@@ -28,9 +28,12 @@ router.put(
 );
 
 router.post('/login', adminAuthController.login);
+router.get("/user", isAuth,adminAuthController.getUser);
+router.post("/depOfUser", isAuth,adminVerificationDocumentsController.getDocsOfUser);
+router.post("/depFailMec", isAuth,adminVerificationDocumentsController.setFailedMec); 
 
-
-router.get("/pendingVerification",isAuth,adminVerificationDocumentsController.getPedingVerification);
+router.get("/pendingVerification",isAuth,adminVerificationDocumentsController.getPendingUsers);
+router.post("/getValidateDetails",isAuth,adminVerificationDocumentsController.getValidateDetails);
 router.post("/verifyandstore",isAuth,adminVerificationDocumentsController.verifyAndStore);
 router.post("/verifyoung",birthCertController.verifyInAdminLevelAndStore);
 module.exports = router;
