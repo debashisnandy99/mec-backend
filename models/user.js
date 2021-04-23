@@ -72,6 +72,9 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    mecCard: {
+      type: String,
+    },
     photo: {
       type: String,
     },

@@ -233,6 +233,88 @@ exports.getDocsOfUser = (req, res, next) => {
     });
 };
 
+exports.getPendingMecCard = async (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 8;
+  let totalItem = await User.find({
+    isMecVerify: "verified",
+    mecCard: { $exists: false },
+  }).countDocuments();
+  User.find({
+    isMecVerify: "verified",
+    mecCard: { $exists: false },
+  })
+    .skip((currentPage - 1) * perPage)
+    .limit(perPage)
+    .then((user) => {
+      res.status(200).json({
+        message: "Fetched Docs successfully.",
+        users: user,
+        totalItem: totalItem,
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.getIssuedMecCard = async (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 8;
+  let totalItem = await User.find({
+    isMecVerify: "verified",
+    mecCard: { $exists: false },
+  }).countDocuments();
+  User.find({
+    isMecVerify: "verified",
+    mecCard: { $exists: true },
+  })
+    .skip((currentPage - 1) * perPage)
+    .limit(perPage)
+    .then((user) => {
+      res.status(200).json({
+        message: "Fetched Docs successfully.",
+        users: user,
+        totalItem: totalItem,
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.issueMecCard = (req, res, next) => {
+  console.log(req.body.uid + "dss" + req.body.mec);
+  User.updateOne(
+    { _id: req.body.uid },
+    {
+      mecCard: req.body.mec,
+    },
+    function (err, raw) {
+      if (err) {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      } else if (raw.nModified > 0) {
+        res.status(200).json({
+          message: "success",
+        });
+      } else {
+        res.status(401).json({
+          message: "failed",
+        });
+      }
+    }
+  );
+};
+
 exports.verifyAndStore = (req, res, next) => {
   const errors = validationResult(req);
 
@@ -343,7 +425,7 @@ const addToIpfs = async (uid, res, next) => {
               type: "function",
             },
           ],
-          "0x2De00abB05374B5F186143453822A4dA3cd16cb1"
+          "0xA3Afe5f0A1280D1B621616855914e3689bbAf85f"
         );
 
         fileHash.methods
