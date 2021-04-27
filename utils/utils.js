@@ -14,16 +14,8 @@ exports.getDocuments = async (department, currentPage, perPage, status) => {
     status: status,
   }).countDocuments();
   const docs = await Document.find({ depId: department, status: status })
-    .populate("user", {
-      name: 1,
-      dob: 1,
-      fathersName: 1,
-      mothersName: 1,
-      address: 1,
-      phone: 1,
-      photo: 1,
-      signature: 1
-    })
+    .populate("user")
+    .populate("depId")
     .skip((currentPage - 1) * perPage)
     .limit(perPage);
   return { totalItems: count, docs: docs };
