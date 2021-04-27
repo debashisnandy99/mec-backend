@@ -14,7 +14,7 @@ exports.getDocuments = async (department, currentPage, perPage, status) => {
     status: status,
   }).countDocuments();
   const docs = await Document.find({ depId: department, status: status })
-    .populate("user")
+   
     .populate("depId")
     .skip((currentPage - 1) * perPage)
     .limit(perPage);
