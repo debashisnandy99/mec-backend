@@ -81,6 +81,8 @@ router.post(
   authController.login
 );
 
+router.post("/kisoklogin", authController.kiosklogin);
+
 router.post(
   "/checkmec",
   [body("mec").trim().not().isEmpty()],
