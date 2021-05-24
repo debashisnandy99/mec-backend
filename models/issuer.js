@@ -20,10 +20,6 @@ const issuerSchema = new Schema(
             ref: "Department",
             required: true
         },
-        password: {
-            type: String,
-            required: true
-        },
     },
     { timestamps: true }
 );
